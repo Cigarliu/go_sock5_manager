@@ -1,10 +1,14 @@
 package main
 
 import (
+	"github.com/sirupsen/logrus"
+	_ "socks5_go/sck5log"
 	sock "socks5_go/sock"
 )
-
 func main() {
+	logrus.Error("****** 错误日志日志测试 ******")
+	logrus.Info("****** 信息日志日志测试 ******")
+	logrus.Debug("****** 调试日志日志测试 ******")
 	var a sock.MyConfig
 	a.ServerAndListen()
 	a.Port = ":10081"

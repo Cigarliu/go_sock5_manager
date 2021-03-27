@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	fileName = "sck5log.log"  // 日志文件前缀名称
+	fileName = "sck5log.log"      // 日志文件前缀名称
+	logLevel = logrus.DebugLevel  // 日志级别设置
 )
 
 func init() {
@@ -25,6 +26,5 @@ func init() {
 	} else {
 		logrus.Info("failed to log to file.")
 	}
-	//设置最低日志级别为INFO级别
-	logrus.SetLevel(logrus.InfoLevel)
+	logrus.SetLevel(logLevel)
 }
