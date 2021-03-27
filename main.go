@@ -1,10 +1,13 @@
 package main
 
-func main() {
+import (
+	sock "socks5_go/sock"
+)
 
-	var a  MyConfig
+func main() {
+	var a sock.MyConfig
 	a.ServerAndListen()
-	a.port = ":10081"
+	a.Port = ":10081"
 	a.ServerAndListen()
 }
 
