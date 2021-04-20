@@ -7,7 +7,10 @@ import (
 	"io"
 	"net"
 	"os"
+	httpsocks "socks5_go/http"
 	"strconv"
+	_ "socks5_go/http"
+
 )
 
 type MySocks5 interface {
@@ -45,31 +48,37 @@ func AuthSocks5(client net.Conn) (interface{}, interface{}) {
 	}
 
 	// 不认证
-	n, err = client.Write([]byte{0x05, 0x00})
+	//n, err = client.Write([]byte{0x05, 0x00})
 
-	////认证
-	//n, err = client.Write([]byte{0x05, 0x02})
-	//if n != 2 || err != nil {
-	//	return nil, errors.New("write rsp: " + err.Error())
-	//}
-	//
-	//wBuff := make([]byte, 1024)
-	//wn, errReadBuff := client.Read(wBuff[:])
-	//if errReadBuff != nil {
-	//	fmt.Println("授权阶段出现问题", errReadBuff)
-	//	client.Write([]byte{0x05, 0x01})
-	//	client.Close()
-	//	return nil, nil
-	//}
-	//client.Write([]byte{0x05, 0x00})
-	//uLen := int(wBuff[1])      // 用户长度
-	//pLen := int(wBuff[2+uLen]) // 密码长度
+	//认证
+	n, err = client.Write([]byte{0x05, 0x02})
+	if n != 2 || err != nil {
+		return nil, errors.New("write rsp: " + err.Error())
+	}
+
+	wBuff := make([]byte, 1024)
+	wn, errReadBuff := client.Read(wBuff[:])
+	if errReadBuff != nil {
+		fmt.Println("授权阶段出现问题", errReadBuff)
+		client.Write([]byte{0x05, 0x01})
+		client.Close()
+		return nil, nil
+	}
+	client.Write([]byte{0x05, 0x00})
+	uLen := int(wBuff[1])      // 用户长度
+	pLen := int(wBuff[2+uLen]) // 密码长度
 	//fmt.Println("用户长度:", uLen)
 	//fmt.Println("密码长度", pLen)
-	//uname := string(wBuff[2 : 2+uLen])
-	//passwd := string(wBuff[3+pLen : wn])
+	uname := string(wBuff[2 : 2+uLen])
+	passwd := string(wBuff[wn - pLen : wn])
 	//fmt.Println("用户名：", uname)
 	//fmt.Println("密码:", passwd)
+	checkErr := httpsocks.CheckUser(uname,passwd)
+	if checkErr != nil  {
+		fmt.Println("User check fail\n")
+		client.Close()
+		return nil, checkErr
+	}
 	return nil, nil
 }
 
@@ -87,11 +96,10 @@ func (s MyConfig) ServerAndListen() (interface{}, interface{}) {
 		//fmt.Println("错误:","您的账号现在无权使用")
 		//client.Close()
 		//continue
-
 		if err != nil {
 			fmt.Println("建立连接发生错误：", err)
 		}
-		fmt.Println("连接ok")
+		//fmt.Println("连接ok")
 
 		go ProcessSocks5(client)
 	}
@@ -115,6 +123,7 @@ func ForwardRequest(host string, port string, client net.Conn) interface{} {
 	client.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 	go io.Copy(server, client)
 	go io.Copy(client, server)
+	fmt.Println("Function Shutdown")
 	return nil
 }
 
@@ -152,7 +161,7 @@ func GetClientCallInfo(client net.Conn) (string, string, interface{}) {
 func ProcessSocks5(client net.Conn) {
 	_, err := AuthSocks5(client)
 	if err != nil {
-		fmt.Println("发生错误:", err)
+		//fmt.Println("发生错误:", err)
 	} else {
 		host, port, err := GetClientCallInfo(client)
 		//host = "qd.hlwaqxz.cn"
@@ -161,7 +170,6 @@ func ProcessSocks5(client net.Conn) {
 			fmt.Println(err)
 		} else {
 			ForwardRequest(host, port, client)
-
 		}
 	}
 
