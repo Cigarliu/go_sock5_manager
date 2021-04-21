@@ -8,9 +8,8 @@ import (
 	"net"
 	"os"
 	httpsocks "socks5_go/http"
-	"strconv"
 	_ "socks5_go/http"
-
+	"strconv"
 )
 
 type MySocks5 interface {
@@ -22,10 +21,18 @@ type MySocks5 interface {
 	ProcessSocks5(client net.Conn) interface{}
 }
 
+
 type MyConfig struct {
 	Post string
 	Port string
 }
+
+type   UserInfo struct {
+	User string
+	Pass string
+}
+
+var LoginInfo UserInfo
 
 func AuthSocks5(client net.Conn) (interface{}, interface{}) {
 	buf := make([]byte, 256)
@@ -47,38 +54,10 @@ func AuthSocks5(client net.Conn) (interface{}, interface{}) {
 		return nil, errors.New("reading methods: " + err.Error())
 	}
 
-	// 不认证
-	//n, err = client.Write([]byte{0x05, 0x00})
+	//不认证
+	n, err = client.Write([]byte{0x05, 0x00})
 
-	//认证
-	n, err = client.Write([]byte{0x05, 0x02})
-	if n != 2 || err != nil {
-		return nil, errors.New("write rsp: " + err.Error())
-	}
 
-	wBuff := make([]byte, 1024)
-	wn, errReadBuff := client.Read(wBuff[:])
-	if errReadBuff != nil {
-		fmt.Println("授权阶段出现问题", errReadBuff)
-		client.Write([]byte{0x05, 0x01})
-		client.Close()
-		return nil, nil
-	}
-	client.Write([]byte{0x05, 0x00})
-	uLen := int(wBuff[1])      // 用户长度
-	pLen := int(wBuff[2+uLen]) // 密码长度
-	//fmt.Println("用户长度:", uLen)
-	//fmt.Println("密码长度", pLen)
-	uname := string(wBuff[2 : 2+uLen])
-	passwd := string(wBuff[wn - pLen : wn])
-	//fmt.Println("用户名：", uname)
-	//fmt.Println("密码:", passwd)
-	checkErr := httpsocks.CheckUser(uname,passwd)
-	if checkErr != nil  {
-		fmt.Println("User check fail\n")
-		client.Close()
-		return nil, checkErr
-	}
 	return nil, nil
 }
 
@@ -89,6 +68,13 @@ func (s MyConfig) ServerAndListen() (interface{}, interface{}) {
 		fmt.Println("服务启动失败:", "您可能多次启动本程序，或服务端口被占用")
 		os.Exit(0)
 	}
+	loginErr := Login()
+	if loginErr !=nil {
+		return nil, nil
+
+	}
+	
+	
 	fmt.Println("启动成功")
 	for true {
 		client, err := server.Accept()
@@ -105,7 +91,17 @@ func (s MyConfig) ServerAndListen() (interface{}, interface{}) {
 
 func ForwardRequest(host string, port string, client net.Conn) interface{} {
 	// socks5  上游代理
-	socksServer, err := proxy.SOCKS5("tcp", "ssr.comeboy.cn:2933", nil, proxy.Direct)
+
+	authinfo := proxy.Auth{}
+	authinfo.User = LoginInfo.User
+	authinfo.Password = LoginInfo.Pass
+	fmt.Println("auth info \n")
+	fmt.Println(authinfo.User)
+	fmt.Println(authinfo.Password)
+
+
+
+	socksServer, err := proxy.SOCKS5("tcp", "ssr.comeboy.cn:11080", &authinfo, proxy.Direct)
 	if err != nil {
 		fmt.Println("GG 初始化代理失败！")
 		return nil
@@ -114,6 +110,7 @@ func ForwardRequest(host string, port string, client net.Conn) interface{} {
 	server, errDial := socksServer.Dial("tcp", net.JoinHostPort(host, port))
 	if errDial != nil {
 		fmt.Println("使用代理访问出错！")
+		fmt.Println(errDial)
 		return nil
 	}
 	//响应客户端连接成功
@@ -178,4 +175,25 @@ func ProcessSocks5(client net.Conn) {
 		}
 	}
 
+}
+
+func  Login()(interface{}){
+	var user string
+	var pass string
+	fmt.Println("请输入登录账户:")
+	fmt.Scanln(&user)
+	fmt.Println("请输入登录密码:")
+	fmt.Scanln(&pass)
+	err :=httpsocks.CheckUser(user,pass)
+	if err !=nil {
+		fmt.Println("账号或密码错误")
+		return errors.New("pass error")
+	}
+	LoginInfo.Pass = pass
+	LoginInfo.User = user
+	fmt.Print("************* 欢迎使用  ************* \n" +
+		"请使用SwitcheyOmega进行连接\n" +
+		"连接地址：127.0.0.1  端口: 1080\n" +
+		"************************************\n")
+return nil
 }

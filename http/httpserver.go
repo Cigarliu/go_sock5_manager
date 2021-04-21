@@ -3,114 +3,56 @@ package httpsocks
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"log"
+	"io/ioutil"
 	"net/http"
-	"time"
-	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/gin-gonic/gin"
+	"encoding/json"
 
 )
-var MysqlDb *sql.DB
-var MysqlDbErr error
-
-const (
-	USER_NAME = "cigarliu"
-	PASS_WORD = "liuxuejia.123"
-	HOST      = "gz-cynosdbmysql-grp-gtbfz5lr.sql.tencentcdb.com"
-	PORT      = "29692"
-	DATABASE  = "socks5"
-	CHARSET   = "utf8"
-)
-
-type DBuser struct {
-	id int
-	user string
-	pass string
-	y int
-	m int
-	d int
-	timeStamp int
-	maxDevice int
-}
 
 
-func InitDB()(interface{}){
-	UserPass = make(map[string]DBuser)
-	dbDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s", USER_NAME, PASS_WORD, HOST, PORT, DATABASE, CHARSET)
 
-	// 打开连接失败
-	MysqlDb, MysqlDbErr = sql.Open("mysql", dbDSN)
-	//defer MysqlDb.Close();
-	if MysqlDbErr != nil {
-		log.Println("dbDSN: " + dbDSN)
-		panic("数据源配置不正确: " + MysqlDbErr.Error())
-	}
 
-	// 最大连接数
-	MysqlDb.SetMaxOpenConns(100)
-	// 闲置连接数
-	MysqlDb.SetMaxIdleConns(20)
-	// 最大连接周期
-	MysqlDb.SetConnMaxLifetime(100*time.Second)
-	if MysqlDbErr = MysqlDb.Ping(); nil != MysqlDbErr {
-		fmt.Print("mysql connect error")
-		return MysqlDbErr.Error()
-	}
-	fmt.Print("mysql connect ok\n")
-	return nil
-}
-
-var UserPass map[string]DBuser /*创建集合 */
-
-func GetUserInfo(user string)(DBuser,error){
-	var u DBuser
-	u.user = user
-	sqlStr := "select id,pass,y,m,d,timestamp,max_device from user_info where user=?"
-    mapUser,ok :=UserPass[user]
-	if (ok){
-		fmt.Println("使用map查询")
-		return mapUser,nil
-	}
-
-	
-	rowObj :=MysqlDb.QueryRow(sqlStr,user)
-	err := rowObj.Scan(&u.id,&u.pass,&u.y,&u.m,&u.d,&u.timeStamp,&u.maxDevice)
+func Get(url string)(string,interface{}){
+	res, err :=http.Get(url)
 	if err != nil {
-		//fmt.Println(err)
-		return u,err
+		//fmt.Println("get fail ")
+		return "",errors.New("fail")
 	}
-	UserPass[user] = u
-	fmt.Println(u)
-	return u, nil
+	robots, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		return "",errors.New("fail")
+	}
+	//fmt.Print(string(robots))
+	return string(robots),nil
 }
-func CheckUser(user,pass string)error {
-	u , err := GetUserInfo(user)
-	if err != nil{
+
+type HttpResCheck struct {
+	Status int
+	Msg string
+}
+func CheckUser(user,pass string) (interface{}){
+	var url ="http://flv.comeboy.cn:8989/login"
+	var urlUserPass = url + "?" +"user=" + user +"&pass=" +pass
+	//fmt.Println(urlUserPass)
+	res,err := Get(urlUserPass)
+	if err !=nil {
 		return err
 	}
-	if u.pass != pass {
-		return errors.New("pass check fail")
+    status :=HttpResCheck{}
+	//fmt.Println(res)
+
+	err = json.Unmarshal([]byte(res),&status)
+	if err != nil {
+		fmt.Print(err)
+		return err
+	}
+	//fmt.Println(status.Status)
+	//fmt.Println(status.Msg)
+	if status.Status != 1{
+		//fmt.Print("pass error")
+		return errors.New("pass error")
 	}
 	return nil
-}
-
-
-func LoginHandler(c *gin.Context){
-	clientIP := c.ClientIP()
-	c.JSON(http.StatusOK,gin.H{
-		"status":"ok",
-		"msg":clientIP,
-	})
-}
-
-func WebStart()  {
-	r := gin.Default()
-	r.GET("/login",LoginHandler)
-	err :=r.Run(":8989")
-	if(err !=nil) {
-		fmt.Println("servevr run fail")
-	}
 
 }
