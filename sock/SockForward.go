@@ -93,13 +93,10 @@ func (s MyConfig) ServerAndListen() (interface{}, interface{}) {
 	for true {
 		client, err := server.Accept()
 		fmt.Println("请求ip:", client.RemoteAddr())
-		//fmt.Println("错误:","您的账号现在无权使用")
-		//client.Close()
-		//continue
 		if err != nil {
 			fmt.Println("建立连接发生错误：", err)
 		}
-		//fmt.Println("连接ok")
+		fmt.Println("连接ok")
 
 		go ProcessSocks5(client)
 	}
@@ -121,8 +118,16 @@ func ForwardRequest(host string, port string, client net.Conn) interface{} {
 	}
 	//响应客户端连接成功
 	client.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
-	go io.Copy(server, client)
-	go io.Copy(client, server)
+
+	forward := func(src,dest net.Conn) {
+		defer src.Close()
+		defer dest.Close()
+		io.Copy(src,dest)
+	}
+
+	go forward(client,server)
+	go forward(server,client)
+
 	fmt.Println("Function Shutdown")
 	return nil
 }
