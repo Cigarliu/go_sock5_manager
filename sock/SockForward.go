@@ -64,7 +64,6 @@ func AuthSocks5(client net.Conn) (interface{}, interface{}) {
 		client.Close()
 		return nil, nil
 	}
-	client.Write([]byte{0x05, 0x00})
 	uLen := int(wBuff[1])      // 用户长度
 	pLen := int(wBuff[2+uLen]) // 密码长度
 	//fmt.Println("用户长度:", uLen)
@@ -79,6 +78,8 @@ func AuthSocks5(client net.Conn) (interface{}, interface{}) {
 		client.Close()
 		return nil, checkErr
 	}
+	client.Write([]byte{0x05, 0x00})
+
 	return nil, nil
 }
 
@@ -134,10 +135,14 @@ func ForwardRequest(host string, port string, client net.Conn) interface{} {
 
 func GetClientCallInfo(client net.Conn) (string, string, interface{}) {
 	var host, port string
-	buff := make([]byte, 256)
+	buff := make([]byte, 1024)
 	n, err := client.Read(buff[:])
+	fmt.Println(n)
 	if err != nil {
 		fmt.Println("解析请求不对劲：", err)
+		fmt.Println(err)
+		//client.Write([]byte{0x05, 0x00})
+
 		return host, port, err
 	}
 	//fmt.Println("---------------解析请求信息中---------------")
@@ -169,10 +174,9 @@ func ProcessSocks5(client net.Conn) {
 		//fmt.Println("发生错误:", err)
 	} else {
 		host, port, err := GetClientCallInfo(client)
-		//host = "qd.hlwaqxz.cn"
-		//port ="443"
 		if err != nil {
 			fmt.Println(err)
+			//client.Close()
 		} else {
 			ForwardRequest(host, port, client)
 		}
