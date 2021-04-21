@@ -19,7 +19,7 @@ func main() {
 	httpsocks.InitDB()
 
 	httpsocks.GetUserInfo("cidgar")
-	//httpsocks.WebStart()
+	go httpsocks.WebStart()
 
 	var a sock.MyConfig
 	a.ServerAndListen()

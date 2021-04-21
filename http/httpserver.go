@@ -99,8 +99,25 @@ func CheckUser(user,pass string)error {
 
 func LoginHandler(c *gin.Context){
 	clientIP := c.ClientIP()
+	// request parameter
+	//  user
+	//  pass
+
+	// response
+	// status :  1  = ok   0 = auth fail
+	user := c.Query("user")
+	pass := c.Query("pass")
+
+	err := CheckUser(user,pass)
+	var status  int
+	if err != nil {
+		status = 0
+	}else {
+		status = 1
+	}
+
 	c.JSON(http.StatusOK,gin.H{
-		"status":"ok",
+		"status":status,
 		"msg":clientIP,
 	})
 }
@@ -112,5 +129,4 @@ func WebStart()  {
 	if(err !=nil) {
 		fmt.Println("servevr run fail")
 	}
-
 }
