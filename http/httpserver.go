@@ -70,7 +70,7 @@ func GetUserInfo(user string)(DBuser,error){
 	sqlStr := "select id,pass,y,m,d,timestamp,max_device from user_info where user=?"
     mapUser,ok :=UserPass[user]
 	if (ok){
-		fmt.Println("使用map查询")
+		//fmt.Println("使用map查询")
 		return mapUser,nil
 	}
 

@@ -92,11 +92,11 @@ func (s MyConfig) ServerAndListen() (interface{}, interface{}) {
 	fmt.Println("启动成功")
 	for true {
 		client, err := server.Accept()
-		fmt.Println("请求ip:", client.RemoteAddr())
+		//fmt.Println("请求ip:", client.RemoteAddr())
 		if err != nil {
 			fmt.Println("建立连接发生错误：", err)
 		}
-		fmt.Println("连接ok")
+		//fmt.Println("连接ok")
 
 		go ProcessSocks5(client)
 	}
@@ -128,7 +128,7 @@ func ForwardRequest(host string, port string, client net.Conn) interface{} {
 	go forward(client,server)
 	go forward(server,client)
 
-	fmt.Println("Function Shutdown")
+	//fmt.Println("Function Shutdown")
 	return nil
 }
 
