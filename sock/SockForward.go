@@ -78,7 +78,7 @@ func AuthSocks5(client net.Conn) (interface{}, interface{}) {
 		client.Close()
 		return nil, checkErr
 	}
-	client.Write([]byte{0x05, 0x00})
+	client.Write([]byte{0x00, 0x00})
 
 	return nil, nil
 }
