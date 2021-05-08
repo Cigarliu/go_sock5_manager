@@ -38,6 +38,7 @@ type DBuser struct {
 
 func InitDB()(interface{}){
 	UserPass = make(map[string]DBuser)
+	//UserList = make(map[string]UserConn)
 	dbDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s", USER_NAME, PASS_WORD, HOST, PORT, DATABASE, CHARSET)
 
 	// 打开连接失败
@@ -63,6 +64,24 @@ func InitDB()(interface{}){
 }
 
 var UserPass map[string]DBuser /*创建集合 */
+
+var UserIpList1  map[string]string /*创建集合 */
+var UserIpList2  map[string]string /*创建集合 */
+var UserIpList3  map[string]string /*创建集合 */
+
+type IpList struct {
+	Ip1 string
+	Ip2 string
+	Ip3 string
+}
+
+type UserConn struct {
+	ConnNum int
+	ConnList IpList
+	Lasttimestamp int
+}
+
+
 
 func GetUserInfo(user string)(DBuser,error){
 	var u DBuser
@@ -96,6 +115,28 @@ func CheckUser(user,pass string)error {
 	return nil
 }
 
+func AddUser(c *gin.Context){
+	clientIP := c.ClientIP()
+
+	user := c.Query("user")
+	pass := c.Query("pass")
+	overtime := c.Query("over_time")
+	fmt.Print("\nuser:",user)
+	fmt.Print("\npass:",pass)
+	fmt.Print("\nover_time:",overtime)
+	fmt.Print("\n:","------------------")
+
+	//MysqlDb.Prepare("insert socks5 (user,pass,create_time,over_time) value (?,?,?,?)")
+	//sql_ex,_ := MysqlDb.Prepare("insert socks5 (user,pass,create_time,over_time) value (?,?,?,?)")
+	////
+	//res,_ := sql_ex.Exec(user,pass,time.Now().Unix(),overtime)
+	//fmt.Print(res.LastInsertId())
+
+	c.JSON(http.StatusOK,gin.H{
+		"status":200,
+		"msg":clientIP,
+	})
+}
 
 func LoginHandler(c *gin.Context){
 	clientIP := c.ClientIP()
@@ -122,9 +163,20 @@ func LoginHandler(c *gin.Context){
 	})
 }
 
+
+
+
+
+
+
+
+
+
 func WebStart()  {
 	r := gin.Default()
 	r.GET("/login",LoginHandler)
+	r.GET("/addUserCigar",AddUser)
+
 	err :=r.Run(":8989")
 	if(err !=nil) {
 		fmt.Println("servevr run fail")
