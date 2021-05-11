@@ -174,8 +174,8 @@ func ForwardRequest(host string, port string, client net.Conn,user string) inter
 	client.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 
 	forward := func(src,dest net.Conn) {
-		defer src.Close()
-		defer dest.Close()
+		//defer src.Close()
+		//defer dest.Close()
 		io.Copy(src,dest)
 	}
 
@@ -185,6 +185,8 @@ func ForwardRequest(host string, port string, client net.Conn,user string) inter
 	ConnList.Lock()
 	ConnList.User[user]--
 	ConnList.Unlock()
+	//defer client.Close()
+	//defer server.Close()
 	//fmt.Println("Function Shutdown")
 	return nil
 }
@@ -227,7 +229,7 @@ func GetClientCallInfo(client net.Conn) (string, string, interface{}) {
 func ProcessSocks5(client net.Conn) {
 	user, err := AuthSocks5(client)
 	if err != nil {
-		//fmt.Println("认证失败:", err)
+		fmt.Println("认证失败:", err)
 		client.Close()
 	} else {
 		host, port, err := GetClientCallInfo(client)
