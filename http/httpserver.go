@@ -126,17 +126,33 @@ func AddUser(c *gin.Context){
 	fmt.Print("\nover_time:",overtime)
 	fmt.Print("\n:","------------------")
 
-	//MysqlDb.Prepare("insert socks5 (user,pass,create_time,over_time) value (?,?,?,?)")
-	//sql_ex,_ := MysqlDb.Prepare("insert socks5 (user,pass,create_time,over_time) value (?,?,?,?)")
-	////
-	//res,_ := sql_ex.Exec(user,pass,time.Now().Unix(),overtime)
-	//fmt.Print(res.LastInsertId())
 
+	sql_str := "insert user_info (user,pass,create_time,over_time) value (?,?,?,?)"
+	_,err := MysqlDb.Exec(sql_str,user,pass,time.Now().Unix(),overtime)
+	if err !=nil{
+		fmt.Print(err)
+		c.JSON(http.StatusOK,gin.H{
+			"status":300,
+			"msg":clientIP,
+		})
+	}else {
+
+		c.JSON(http.StatusOK,gin.H{
+			"status":200,
+			"msg":clientIP,
+		})
+	}
+
+}
+
+func GetVersion(c *gin.Context) {
 	c.JSON(http.StatusOK,gin.H{
 		"status":200,
-		"msg":clientIP,
-	})
+		"v":1,
+	    "msg":"update!"})
 }
+
+
 
 func LoginHandler(c *gin.Context){
 	clientIP := c.ClientIP()
@@ -164,19 +180,11 @@ func LoginHandler(c *gin.Context){
 }
 
 
-
-
-
-
-
-
-
-
 func WebStart()  {
 	r := gin.Default()
 	r.GET("/login",LoginHandler)
 	r.GET("/addUserCigar",AddUser)
-
+	r.GET("/getVersion",GetVersion)
 	err :=r.Run(":8989")
 	if(err !=nil) {
 		fmt.Println("servevr run fail")
