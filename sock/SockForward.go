@@ -11,7 +11,6 @@ import (
 	httpsocks "socks5_go/http"
 	"strconv"
 	"sync"
-	"time"
 )
 
 type MySocks5 interface {
@@ -113,11 +112,11 @@ func AuthSocks5(client net.Conn) (interface{}, interface{}) {
 		ConnList.User[uname] = 1
 		ConnList.Unlock()
 	}
-	fmt.Printf("\n")
+	//fmt.Printf("\n")
 
-	fmt.Print(time.Now().Unix() )
-	fmt.Printf("\n账号: ",uname)
-	fmt.Printf("\n链接数: ",num)
+	//fmt.Print(time.Now().Unix() )
+	//fmt.Printf("\n账号: ",uname)
+	//fmt.Printf("\n链接数: ",num)
 
 
 	//fmt.Println("结束记录连接\n")
@@ -158,6 +157,7 @@ func ForwardRequest(host string, port string, client net.Conn,user string) inter
 		ConnList.Lock()
 		ConnList.User[user]--
 		ConnList.Unlock()
+		client.Close()
 		return nil
 	}
 
@@ -168,14 +168,15 @@ func ForwardRequest(host string, port string, client net.Conn,user string) inter
 		ConnList.Lock()
 		ConnList.User[user]--
 		ConnList.Unlock()
+		client.Close()
 		return nil
 	}
 	//响应客户端连接成功
 	client.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 
 	forward := func(src,dest net.Conn) {
-		//defer src.Close()
-		//defer dest.Close()
+		defer src.Close()
+		defer dest.Close()
 		io.Copy(src,dest)
 	}
 
@@ -235,7 +236,7 @@ func ProcessSocks5(client net.Conn) {
 		host, port, err := GetClientCallInfo(client)
 		if err != nil {
 			fmt.Println(err)
-			//client.Close()
+			client.Close()
 		} else {
 			ForwardRequest(host, port, client,user.(string))
 		}
