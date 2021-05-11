@@ -105,7 +105,9 @@
 		if(this.username && this.password && this.overTime)
                 {
                 var date = new Date(this.overTime)
-                this.overTime = date.getTime() / 1000
+                this.overTime = date.getTime()
+                this.overTime = +this.overTime / 1000
+
                 const data = await axios.get('/addUserCigar', {
                     params: {
                         user: this.username,
