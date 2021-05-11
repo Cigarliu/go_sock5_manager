@@ -18,7 +18,7 @@ func main() {
 		"************************************\n")
 	httpsocks.InitDB()
 
-	httpsocks.GetUserInfo("cidgar")
+	//httpsocks.GetUserInfo("cidgar")
 	go httpsocks.WebStart()
 
 	var a sock.MyConfig

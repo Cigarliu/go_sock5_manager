@@ -25,8 +25,8 @@ const (
 
 	USER_NAME = "socks5"
 	PASS_WORD = "ZpmnDc2iCGjFAKNH"
-	HOST      = "ssr.comeboy.cn"
-	PORT      = "13306"
+	HOST      = "127.0.0.1"
+	PORT      = "3306"
 	DATABASE  = "socks5"
 	CHARSET   = "utf8"
 )
