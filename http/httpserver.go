@@ -16,10 +16,17 @@ var MysqlDb *sql.DB
 var MysqlDbErr error
 
 const (
-	USER_NAME = "cigarliu"
-	PASS_WORD = "liuxuejia.123"
-	HOST      = "gz-cynosdbmysql-grp-gtbfz5lr.sql.tencentcdb.com"
-	PORT      = "29692"
+	//USER_NAME = "cigarliu"
+	//PASS_WORD = "liuxuejia.123"
+	//HOST      = "gz-cynosdbmysql-grp-gtbfz5lr.sql.tencentcdb.com"
+	//PORT      = "29692"
+	//DATABASE  = "socks5"
+	//CHARSET   = "utf8"
+
+	USER_NAME = "socks5"
+	PASS_WORD = "ZpmnDc2iCGjFAKNH"
+	HOST      = "ssr.comeboy.cn"
+	PORT      = "13306"
 	DATABASE  = "socks5"
 	CHARSET   = "utf8"
 )
