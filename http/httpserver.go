@@ -179,10 +179,16 @@ func LoginHandler(c *gin.Context){
 	})
 }
 
+func IndexWeb(c *gin.Context){
+	c.HTML(http.StatusOK, "index.html",nil)
+	//c.Redirect(http.StatusOK,"index.html")
+}
 
 func WebStart()  {
 	r := gin.Default()
+	r.LoadHTMLFiles("./www/index.html")
 	r.GET("/login",LoginHandler)
+	r.GET("/", IndexWeb)
 	r.GET("/addUserCigar",AddUser)
 	r.GET("/getVersion",GetVersion)
 	err :=r.Run(":8989")

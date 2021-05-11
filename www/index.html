@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户注册</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        background-color: skyblue;
+    }
+    
+    h1 {
+        margin-top: 20px;
+        color: #007acc;
+    }
+    
+    .box {
+        margin: 50px auto;
+        max-width: 200px;
+        min-width: 80%;
+        max-height: 200px;
+        min-height: 50vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .box .info-item {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        height: 50px;
+    }
+    
+    .box .info-item span {
+        flex: 3;
+        height: 30px;
+        font-weight: bold;
+    }
+    
+    .box .info-item input {
+        flex: 7;
+        height: 30px;
+        border: 1px solid #fff;
+    }
+    
+    .btn {
+        border: none;
+        height: 50px;
+        width: 200px;
+        margin: 20px auto;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        background-color: #007acc;
+    }
+</style>
+
+<body>
+    <h1>注册用户</h1>
+    <div class="box" id="app">
+        <div class="info-item">
+            <span>用户名：</span><input type="text" id="username" v-model="username">
+        </div>
+        <div class="info-item">
+            <span>密码：</span><input type="text" id="password" v-model="password">
+
+        </div>
+        <div class="info-item">
+            <span>过期时间：</span><input id="overTime" type="date" v-model="overTime">
+
+        </div>
+        <button class="btn" @click="signUp()">注册</button>
+
+    </div>
+
+</body>
+
+</html>
+<script>
+    new Vue({
+        el: "#app",
+        data: function() {
+            return {　　　　　　　　　　　
+                username: null,
+                password: null,
+                overTime: null,
+            }
+        },
+        created() {
+
+        },
+        methods: {
+
+            async signUp() {
+		if(this.username && this.password && this.overTime)
+                {
+                var date = new Date(this.overTime)
+                this.overTime = date.getTime()
+                const data = await axios.get('/addUserCigar', {
+                    params: {
+                        user: this.username,
+                        pass: this.password,
+                        over_time: this.overTime
+                    }
+                })
+		console.log(data)
+                if (data.data.status == '200') {
+                    window.alert('注册成功！')
+                }
+                if (data.data.status == '300') {
+                    window.alert('注册失败！')
+                }
+               }else{
+               window.alert('输入不能为空！')
+               }
+
+            }
+        }
+    })
+</script>
