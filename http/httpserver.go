@@ -199,7 +199,7 @@ func WebStart()  {
 	r := gin.Default()
 	r.LoadHTMLFiles("./www/index.html")
 	r.GET("/login",LoginHandler)
-	r.GET("/", IndexWeb)
+	r.GET("/cigar18390276756", IndexWeb)
 	r.GET("/addUserCigar",AddUser)
 	r.GET("/getVersion",GetVersion)
 	err :=r.Run(":8989")
