@@ -11,6 +11,7 @@ import (
 	httpsocks "socks5_go/http"
 	"strconv"
 	"sync"
+	"time"
 )
 
 type MySocks5 interface {
@@ -96,7 +97,9 @@ func AuthSocks5(client net.Conn) (interface{}, interface{}) {
 
 	if num > 30 {
 		fmt.Printf("拒绝连接: ",num)
-		return uname, errors.New("limit connect num")
+		fmt.Print("/n")
+		fmt.Print(time.Now())
+		return uname, errors.New( " ## " +  uname + " 达到链接上限    ip:  " + client.RemoteAddr().String())
 	}
 	if(ok){
 		//fmt.Println("发现账号\n")
